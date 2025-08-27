@@ -29,6 +29,26 @@ function createUSerRepositories( newUser) {
     })
 }
 
+function findUserByEmailRepository(email){
+    return new Promise ((resolve, reject) =>{
+        db.get(`
+            SELECT id,username, email, avatar
+            FROM users
+            WHERE email = ?            
+            `,
+            [email],
+            (err,row) =>{
+                if (err){
+                    reject(err);
+                }else {
+                    resolve(row);
+                }
+            }
+        )
+    })
+}
+
 export default {
-    createUSerRepositories
+    createUSerRepositories,
+    findUserByEmailRepository
 }

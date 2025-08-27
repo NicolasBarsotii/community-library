@@ -1,8 +1,8 @@
-import db from '../config/database';
+import db from '../config/database.js';
 
 db.run(`
     CREATE TABLE IF NOT EXISTS users (
-    id ITERGER PRIMARY KEY AUTOINCREMENTE,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
@@ -22,9 +22,13 @@ function createUSerRepositories( newUser) {
                 if(err) {
                     rej(err)
                 } else {
-                    res({message: 'User creator'})
+                    res({id: this.lastID, ...newUser})
                 }
             }
         )
     })
+}
+
+export default {
+    createUSerRepositories
 }

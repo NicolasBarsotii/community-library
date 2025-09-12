@@ -2,18 +2,23 @@ import { Router } from "express";
 import userController from "../controller/user.controllers.js";
 import {validate, validateUserId} from '../middlewares/validation.middlewares.js'
 import { userSchema } from "../schema/user.schema.js";
+import { authMiddlewares } from "../middlewares/auth.middlewares.js";
 
 const router = Router();
 
-router.post('/users', 
+router.post('/', 
     validate(userSchema),
     userController.createUSerController)
 
-    router.get('/users', userController.findAllUserController)
+router.post('/login', 
+    userController.loginUSerController)
 
-    router.get('/users/:id',validateUserId, userController.findUserByIdController)
+    router.use(authMiddlewares);
+    router.get('/', userController.findAllUserController)
+
+    router.get('/:id',validateUserId, userController.findUserByIdController)
     
-    router.patch('/users/:id',validateUserId, userController.updateUserController);
+    router.patch('/:id',validateUserId, userController.updateUserController);
 
-    router.delete('/users/:id',validateUserId, userController.deleteUserController)
+    router.delete('/:id',validateUserId, userController.deleteUserController)
 export default router

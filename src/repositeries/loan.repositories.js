@@ -1,13 +1,13 @@
 import db from "../config/database.js";
 
-db.run(`CREATE TABLE IF NOT EXIST loans (
-    id INTEGER PRIMARY KEY AUTOINCREMENT<
+db.run(`CREATE TABLE IF NOT EXISTS loans (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     userId INTEGER,
     bookId INTEGER,
     dueDate DATE,
-    FOREING KEY (userId) REFERENCES users(id),
-    FOREING KEY (bookId) REFERENCES books(id)
-    )`)
+    FOREIGN KEY (userId) REFERENCES users(id),
+    FOREIGN KEY (bookId) REFERENCES books(id)
+)`)
 
     function createLoanRepository(userId, bookId, dueDate){
         return new Promise((resolve, reject) =>{

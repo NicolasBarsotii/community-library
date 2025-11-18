@@ -1,51 +1,85 @@
-import bookRepositories from "../repositeries/book.repositories.js"
+// service/book.service.js
+export default {
+  createBookSevice: async (newBook, userId) => {
+    try {
+      const db = global.db; // ou como você está acessando o banco
+      
+      const result = await db.run(
+        `INSERT INTO books (titulo, autor, paginas, isbn, editora, certificado) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [newBook.titulo, newBook.autor, newBook.paginas, newBook.isbn, newBook.editora, newBook.certificado]
+      );
 
-async function createBookSevice(newBook, userId) {
-    const createBook = await bookRepositories.createBookRepository(newBook, userId)
-    if(!createBook) throw new Error ("Error creating book")
-    return createBook}
+      // Buscar o livro recém-criado
+      const livro = await db.get(
+        `SELECT * FROM books WHERE id = ?`,
+        [result.lastID]
+      );
 
-    async function findAllBooksService() {
-        const books = await bookRepositories.findAllBooksRepository()
-        return books
+      return livro;
+    } catch (error) {
+      throw new Error('Erro ao criar livro: ' + error.message);
     }
+  },
 
-    async function findBookByIdService(bookId) {
-        const book = await bookRepositories.findBookByIdRepository(bookId)
-        if (!book) throw new Error ('Book not found')
-            return book;
+  findAllBooksService: async () => {
+    try {
+      const db = global.db;
+      const books = await db.all(`SELECT * FROM books ORDER BY created_at DESC`);
+      return books;
+    } catch (error) {
+      throw new Error('Erro ao buscar livros: ' + error.message);
     }
+  },
 
-    async function updateBookService(updateBook, bookId, userId) {
-        const book = await bookRepositories.findBookByIdRepository(bookId)
-        if(!book) throw new Error ('Book not found')
-        if (book.userId !== userId) throw new Error ('Unauthozired')
-        const response = await bookRepositories.updateBookRepository(
-            updateBook,
-            bookId
-        )
-        return response;
+  findBookByIdService: async (bookId) => {
+    try {
+      const db = global.db;
+      const book = await db.get(`SELECT * FROM books WHERE id = ?`, [bookId]);
+      
+      if (!book) {
+        throw new Error('Livro não encontrado');
+      }
+      
+      return book;
+    } catch (error) {
+      throw new Error('Erro ao buscar livro: ' + error.message);
     }
+  },
 
-    async function deleteBookService(bookId, userId){
-        const book = await bookRepositories.findBookByIdRepository(bookId)
-        if (!book) throw new Error('Book not Found')
-        if (book.userId !== userId) throw new Error ('unauthorized')
-        const response = await bookRepositories.deleteBookRepository(bookId)
-        return response
-    }
+  updateBookService: async (updateBook, bookId, userId) => {
+    try {
+      const db = global.db;
+      
+      await db.run(
+        `UPDATE books 
+         SET titulo = ?, autor = ?, paginas = ?, isbn = ?, editora = ?, certificado = ?
+         WHERE id = ?`,
+        [updateBook.titulo, updateBook.autor, updateBook.paginas, updateBook.isbn, 
+         updateBook.editora, updateBook.certificado, bookId]
+      );
 
-    async function searchBookService(search) {
-        if (!search) return await bookRepositories.findAllBooksRepository();
-        const books = await bookRepositories.searchBooksRepository(search);
-        return books
+      // Buscar livro atualizado
+      const book = await db.get(`SELECT * FROM books WHERE id = ?`, [bookId]);
+      return book;
+    } catch (error) {
+      throw new Error('Erro ao atualizar livro: ' + error.message);
     }
+  },
 
-    export default{
-        createBookSevice,
-        findAllBooksService,
-        findBookByIdService,
-        updateBookService,
-        deleteBookService,
-        searchBookService
+  deleteBookService: async (bookId, userId) => {
+    try {
+      const db = global.db;
+      
+      const result = await db.run(`DELETE FROM books WHERE id = ?`, [bookId]);
+      
+      if (result.changes === 0) {
+        throw new Error('Livro não encontrado');
+      }
+      
+      return { message: 'Livro deletado com sucesso' };
+    } catch (error) {
+      throw new Error('Erro ao deletar livro: ' + error.message);
     }
+  }
+};
